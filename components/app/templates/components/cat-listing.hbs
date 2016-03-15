@@ -1,0 +1,12 @@
+<h2>{{cat.title}}</h2>
+<p>Owner: {{cat.owner}}</p>
+<p>Type: {{cat.type}}</p>
+<p>Location: {{cat.city}}</p>
+<p>Number of bedrooms: {{cat.bedrooms}}</p>
+
+{{#if isImageShowing}}
+  <p><img src={{cat.image}} alt={{cat.type}} width="500"></p>
+  <button {{action "imageHide"}}>Hide image</button>
+{{else}}
+  <button {{action "imageShow"}}>Show image</button>
+{{/if}}
