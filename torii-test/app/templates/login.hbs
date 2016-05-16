@@ -1,0 +1,30 @@
+
+<div class="padding">
+
+  <span class="subheader">Login</span>
+
+  <form {{action 'authenticate' on='submit'}}>
+
+    {{input value=identification placeholder="email" class="input"}}
+    <br />
+    {{input value=password placeholder="password" class="input" type="password"}}
+    <br />
+    <button type=submit class="large">Sign-in</button>
+  </form>
+
+  <form {{action 'authenticate_fb' on='submit'}}>
+    <button type=submit class="large">Sign-in with Facebook</button>
+  </form>
+
+  <form {{action 'authenticate_twitter' on='submit'}}>
+    <button type=submit class="large">Sign-in with twitter</button>
+  </form>
+
+  {{#if errorMessage}}
+    <p>
+      <strong>Login Failed</strong>
+      <code>{{errorMessage}}</code>
+    </p>
+  {{/if}}
+
+</div>

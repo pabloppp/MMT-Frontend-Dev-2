@@ -1,0 +1,193 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf460
+{\fonttbl\f0\fnil\fcharset0 Roboto-Regular;\f1\fnil\fcharset0 Roboto-Light;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww16940\viewh11620\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf0 Creating a new project with:\
+\
+> ember new <project_name>\
+\
+Task Manager is going to be a component, so it can have it\'92s own page or be inserted as a widget in any page.\
+This will also create the component\'92s template\
+\
+> ember generate component task-manager\
+\
+Generate the model \'91task\'92 \
+		\
+> ember generate model task\
+\
+The model code will look like this:\
+\
+We are going to assume that the model \'91user\'92 already exists as we are only trying to build a feature for a bigger project.\
+\
+
+\f1\i import DS from 'ember-data';\
+\
+export default DS.Model.extend(\{\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 	_id: DS.attr(\'91number\'92),\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 	status: DS.attr('string'),\
+	assignedTo: DS.hasMany(\'91user\'92),\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 	creator: DS.belongsTo(\'91user\'92)\
+	title: DS.attr('string'),\
+	description: DS.attr('string'),\
+	priority: DS.attr(\'91boolean\'92),\
+	createdAt: DS.attr(\'91date\'92),\
+	lastModified: DS.attr(\'91date\'92)\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 \})\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\i0 \cf0 We now need to make a connection with the database, so we create an adapter\
+\
+> ember generate adapter application\
+\
+And we connect the models with the api with this code\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f1\i \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 import DS from 'ember-data';\
+\
+export default DS.JSONAPIAdapter.extend(\{\
+	host: 'https://api.taskmanagerapp.com',\
+	namespace: 'v1\'92\
+\})\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\i0 \cf0 and we connect the models with the api with this code.\
+\
+\
+Now we are going to edit the component, we start with the task-manager.js\
+\
+
+\f1\i import Ember from 'ember';\
+\
+export default Ember.Component.extend(\{\
+	store: Ember.inject.service(),\
+	didInitAttrs()\{\
+    		var store = this.get('store');\
+    		this.set('tasks', store.query('task', \{page: 1, itemsPerPage: 20\}));  	\},\
+  	actions: \{\
+  		\'85\
+  	\}\
+\});
+\f0\i0 \
+\
+First need the store injected into the component, so we inject it with the first like (we don\'92t need to say what service we are injecting because the variable is already called \'91store\'92).\
+We then initialize the variables inside the method \'91didInitAttrs()\'92, putting the tasks inside the variable \'91tasks\'92.\
+\
+This will show the list of tasks in the first page, but we still need to be able to filter & paginate them.\
+\
+We start with the pagination, for that we create 3 actions, prevPage, nextPage and goToPage:\
+\
+
+\f1\i nextPage() \{\
+	var store = this.get('store');\
+      	this.set('page', this.get('page')+1);\
+      	this.set('tasks', store.query('task', \{page: this.get('page'), itemsPerPage: 20\}));\
+\},\
+prevPage() \{\
+      	var store = this.get('store');\
+      	this.set('page', this.get('page')-1);\
+      	this.set('tasks', store.query('task', \{page: this.get('page'), itemsPerPage: 20\}));\
+\},\
+goToPage(n) \{\
+      	var store = this.get('store');\
+      	this.set('page', n);\
+      	this.set('tasks', store.query('task', \{page: this.get('page'), itemsPerPage: 20\}));\
+\}
+\f0\i0 \
+\
+The next action will search for a string in the title:\
+\
+
+\f1\i findTasks()\{\
+	this.set(\'91page\'92, 1);\
+      	var store = this.get('store');\
+      	var query = this.get("searchQuery");\
+      	var regex = new RegExp("" + query + "", "g");\
+      	var results = store.query(\'91task\'92, \{\
+		q: regex, \
+		page: this.get('page\'92), \
+		itemsPerPage: 20\
+	\});\
+      	this.set('tasks', results);\
+\}
+\f0\i0 \
+\
+And the last action will sort items by a field:\
+\
+
+\f1\i filterTasks(property)\{\
+      	var store = this.get('store');\
+      	var results = store.query('task', \{\
+       		filterBy: property,\
+        		order: "DESC",\
+       		page: this.get('page'),\
+        		itemsPerPage: 20\
+      	\});\
+      	this.set('tasks', results);\
+\}
+\f0\i0 \
+\
+The last thing we need is to define the template for this component, we will edit the task-manager.hbs:\
+\
+
+\f1\i <h2>Task Manager</h2>\
+\
+<ul>\
+  <li>\
+  Sort by:\
+  <button \{\{action "filterTasks" "id"\}\}>ID </button>\
+  <button \{\{action "filterTasks" "title"\}\}>Title </button>\
+  <button \{\{action "filterTasks" "priority"\}\}>Priority </button>\
+  <button \{\{action "filterTasks" "lastModified"\}\}>Latest Update </button>\
+  <button \{\{action "filterTasks" "status"\}\}>Status </button>\
+  <button \{\{action "filterTasks" "assignedTo"\}\}>Assigned Users </button>\
+  \{\{input value=searchQuery placeholder="Search..."\}\}\
+  <button \{\{action "findTasks"\}\}>SEARCH</button>\
+  </li>\
+\
+  \{\{#each tasks as |task|\}\}\
+    <li>\
+      \{\{task.id\}\},\
+      \{\{task.title\}\},\
+      \{\{task.description\}\},\
+      \{\{task.priority\}\},\
+      \{\{task.lastModified\}\},\
+      \{\{task.status\}\},\
+\
+      \{\{#each task.assignedTo as |user|\}\}\
+        \{\{user.name\}\}\
+      \{\{/each\}\}\
+\
+    </li>\
+  \{\{/each\}\}\
+\
+  <button \{\{action "prevPage"\}\} >Prev Page </button>\
+  <button \{\{action "nextPage"\}\} >Next Page </button>\
+\
+</ul>
+\f0\i0 \
+\
+This will create a component that shows the tasks and allows pagination, filtering and sorting.\
+\
+To include this in any part on the app, you just have to include the following line in any template:\
+\
+
+\f1\i \{\{task-manager\}\}
+\f0\i0 \
+\
+The tools used for this were:\
+\
+Ember CLI for creating the project and generating models, components, etc\'85\
+Live reload for updating the view every time you modify something.\
+Ember-Data for defining the models, connecting to the REST API which provides all the data and filter/sorting methods\
+\
+THE END!}

@@ -1,0 +1,6 @@
+{
+  "events": {
+    "restart": "ember build"
+  },
+  "watch": ["app/"]
+}

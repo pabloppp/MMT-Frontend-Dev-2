@@ -1,0 +1,13 @@
+[
+  {
+    "_id": 123,
+    "status": "DONE",
+    "assignedTo": ["achim"],
+    "creator": "mahmut",
+    "title": "Super Task",
+    "description": "I eat babies",
+    "priority": false,
+    "createdAt": "2016-05-02 09:39:40.676Z",
+    "lastModified": "2016-05-02 09:39:40.676Z"
+  }
+]

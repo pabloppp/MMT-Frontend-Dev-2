@@ -1,0 +1,21 @@
+<!--<h2 id="title">Welcome to Ember</h2>-->
+
+<nav>
+  {{#link-to 'index' class="action"}}
+  HOME
+  {{/link-to}}
+
+  {{#link-to 'protected' class="action"}}
+  PROTECTED
+  {{/link-to}}
+
+  {{#if session.isAuthenticated}}
+    <button {{action 'logout'}} class="action right">Sign-out</button>
+  {{else}}
+    {{#link-to 'login' class="action right"}}
+      Sign-in
+    {{/link-to}}
+  {{/if}}
+</nav>
+
+{{outlet}}
